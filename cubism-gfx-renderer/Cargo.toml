@@ -1,0 +1,13 @@
+[package]
+name = "cubism-gfx-renderer"
+version = "0.1.0"
+authors = ["Lukas Wirth <lukastw97@gmail.com>"]
+repository = "https://github.com/Veykril/cubism-rs"
+homepage = "https://github.com/Veykril/cubism-rs"
+license = "MIT"
+description = "gfx renderer for the cubism crate"
+
+[dependencies]
+gfx = "0.17.1"
+cubism = { version = "0.1.0", path = "../" }
+nalgebra = "*"

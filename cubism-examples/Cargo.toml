@@ -1,0 +1,21 @@
+[package]
+name = "cubism-examples"
+version = "0.1.0"
+authors = ["Lukas Wirth <lukastw97@gmail.com>"]
+repository = "https://github.com/Veykril/cubism-rs"
+homepage = "https://github.com/Veykril/cubism-rs"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "cubism_demo"
+path = "src/cubism_demo.rs"
+
+[dependencies]
+gfx = "0.17.1"
+gfx_window_glutin = "0.24.0"
+glutin = "^0.16"
+nalgebra = "0.15.3"
+image = "*"
+cubism-gfx-renderer = { version = "*", path = "../cubism-gfx-renderer"}
+cubism = { version = "*", path = ".."}
