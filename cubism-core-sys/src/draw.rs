@@ -7,16 +7,16 @@ use libc::c_ushort;
 use csmVector2;
 use model::csmModel;
 
-pub const csmBlendAdditive: u8 = 1 << 0;
-pub const csmBlendMultiplicative:u8 = 1 << 1;
-pub const csmIsDoubleSided: u8 = 1 << 2;
+pub const csmBlendAdditive: csmFlags = 1 << 0;
+pub const csmBlendMultiplicative: csmFlags = 1 << 1;
+pub const csmIsDoubleSided: csmFlags = 1 << 2;
 
-pub const csmIsVisible: u8 = 1 << 0;
-pub const csmVisibilityDidChange: u8 = 1 << 1;
-pub const csmOpacityDidChange: u8 = 1 << 2;
-pub const csmDrawOrderDidChange: u8 = 1 << 3;
-pub const csmRenderOrderDidChange: u8 = 1 << 4;
-pub const csmVertexPositionsDidChange: u8 = 1 << 5;
+pub const csmIsVisible: csmFlags = 1 << 0;
+pub const csmVisibilityDidChange: csmFlags = 1 << 1;
+pub const csmOpacityDidChange: csmFlags = 1 << 2;
+pub const csmDrawOrderDidChange: csmFlags = 1 << 3;
+pub const csmRenderOrderDidChange: csmFlags = 1 << 4;
+pub const csmVertexPositionsDidChange: csmFlags = 1 << 5;
 
 pub type csmFlags = c_uchar;
 

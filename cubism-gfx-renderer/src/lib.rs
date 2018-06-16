@@ -165,7 +165,7 @@ impl<R: Resources> Renderer<R> {
     }
 
     fn draw_mesh<F: Factory<R>, C: CommandBuffer<R>>(&mut self, factory: &mut F, encoder: &mut Encoder<R, C>, model: &Model, index: usize) -> RendererResult<()> {
-        let opacity = model.drawable_opacity()[index];
+        let opacity = model.drawable_opacities()[index];
         if opacity <= 0.0 {
             return Ok(());
         }
@@ -189,11 +189,6 @@ impl<R: Resources> Renderer<R> {
         self.bundle.slice.end = idx_buffer.len() as u32;
         self.bundle.encode(encoder);
 
-        /*if !model.drawable_is_double_sided(index) {
-
-        } else {
-
-        }*/
         Ok(())
     }
 

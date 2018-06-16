@@ -11,10 +11,11 @@ readme = "README.md"
 
 [dependencies]
 cubism-core-sys = { version = "0.1.0", path = "cubism-core-sys"}
-libc = "*"
+libc = "0.2.42"
 serde_json = "1.0"
 serde = "1.0.27"
 serde_derive = "1.0.27"
+bitflags = "1.0.3"
 
 [workspace]
 members = ["cubism-core-sys", "cubism-examples", "cubism-gfx-renderer"]

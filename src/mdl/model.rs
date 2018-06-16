@@ -8,12 +8,8 @@ use mem::AlignedMemory;
 use core::{self, csmModel};
 use super::moc::Moc;
 use CubismError;
+use flags::{ConstantFlags, DynamicFlags};
 
-macro_rules! is_bit_set {
-    ($byte:expr, $mask:expr) => { ($byte & $mask) == $mask };
-}
-
-//todo Parameter and Part iterator interface
 
 #[derive(Debug)]
 pub struct Model {
@@ -35,36 +31,44 @@ impl Model {
         self.part_ids().iter().position(|id| *id == name)
     }
 
+    /// Returns the parameter values
     #[inline]
     pub fn parameter_values(&self) -> &[f32] {
         self.param_values
     }
 
+    /// Returns the parameter values
     #[inline]
     pub fn parameter_values_mut(&mut self) -> &mut [f32] {
         self.param_values
     }
 
+    /// Sets the parameter value at index `idx` to `val`
     #[inline]
     pub fn set_parameter_value(&mut self, idx: usize, val: f32) {
         self.param_values[idx] = val;
     }
 
+    /// Returns the part opacities
     #[inline]
     pub fn part_opacities(&self) -> &[f32] {
         self.part_opacities
     }
 
+    /// Returns the part opacities
     #[inline]
     pub fn part_opacities_mut(&mut self) -> &mut [f32] {
         self.part_opacities
     }
 
+    /// Sets the part opacity at index `idx` to `val`
     #[inline]
     pub fn set_part_opacity(&mut self, idx: usize, val: f32) {
         self.part_opacities[idx] = val;
     }
 
+    /// Updates this model and finalizes its parameters and part opacities.
+    /// This has to be called before accessing the drawables because it updates them.
     #[inline]
     pub fn update(&mut self) {
         unsafe { core::csmUpdateModel(self.mem.as_mut_ptr()) };
@@ -84,16 +88,19 @@ impl Model {
         (size.x / ppu, size.y / ppu)
     }
 
+    /// Returns a clone of the underlying `Rc<Moc>`
     #[inline]
     pub fn moc(&self) -> Rc<Moc> {
         self.moc.clone()
     }
 
+    /// Returns the raw csmModel ptr
     #[inline]
     pub fn as_ptr(&self) -> *const csmModel {
         self.mem.as_ptr()
     }
 
+    /// Returns the raw csmModel ptr
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut csmModel {
         self.mem.as_mut_ptr()
@@ -110,16 +117,16 @@ impl Model {
         unsafe { slice::from_raw_parts(core::csmGetDrawableRenderOrders(self.as_ptr()), self.drawable_count()) }
     }
 
+    pub fn drawable_draw_orders(&self) -> &[i32] {
+        unsafe { slice::from_raw_parts(core::csmGetDrawableDrawOrders(self.as_ptr()), self.drawable_count()) }
+    }
+
     pub fn drawable_texture_indices(&self) -> &[i32] {
         unsafe { slice::from_raw_parts(core::csmGetDrawableTextureIndices(self.as_ptr()), self.drawable_count()) }
     }
 
     pub fn drawable_index_counts(&self) -> &[i32] {
         unsafe { slice::from_raw_parts(core::csmGetDrawableIndexCounts(self.as_ptr()), self.drawable_count()) }
-    }
-
-    pub fn drawable_vertex_counts(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableVertexCounts(self.as_ptr()), self.drawable_count()) }
     }
 
     pub fn drawable_indices(&self, idx: usize) -> &[u16] {
@@ -130,6 +137,10 @@ impl Model {
                 self.drawable_index_counts()[idx] as usize
             )
         }
+    }
+
+    pub fn drawable_vertex_counts(&self) -> &[i32] {
+        unsafe { slice::from_raw_parts(core::csmGetDrawableVertexCounts(self.as_ptr()), self.drawable_count()) }
     }
 
     pub fn drawable_vertex_positions(&self, idx: usize) -> &[(f32, f32)] {
@@ -152,40 +163,17 @@ impl Model {
         }
     }
 
-    pub fn drawable_opacity(&self) -> &[f32] {
+    pub fn drawable_opacities(&self) -> &[f32] {
         unsafe { slice::from_raw_parts(core::csmGetDrawableOpacities(self.as_ptr()), self.drawable_count()) }
     }
 
-    pub fn drawable_is_double_sided(&self, idx: usize) -> bool {
-        debug_assert!(idx < self.drawable_count());
-        unsafe {
-            let cf = *core::csmGetDrawableConstantFlags(self.as_ptr()).offset(idx as isize);
-            is_bit_set!(cf, core::csmIsDoubleSided)
-        }
-    }
-    /*bitflags
-    pub fn drawable_culling(&self, idx: usize) -> i32 {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableConstantFlags(self.as_ptr()), self.drawable_count())[idx] }
-    }
-
-Rendering::CubismRenderer::CubismBlendMode CubismModel::GetDrawableBlendMode(csmInt32 drawableIndex) const
-{
-    const csmUint8* constantFlags = Core::csmGetDrawableConstantFlags(_model);
-    return (IsBitSet(constantFlags[drawableIndex], Core::csmBlendAdditive))
-               ? Rendering::CubismRenderer::CubismBlendMode::CubismBlendMode_Additive
-               : (IsBitSet(constantFlags[drawableIndex], Core::csmBlendMultiplicative))
-               ? Rendering::CubismRenderer::CubismBlendMode::CubismBlendMode_Multiplicative
-               : Rendering::CubismRenderer::CubismBlendMode::CubismBlendMode_Normal;
-}
-
-    */
-
+    /// make masks an iterator?
     pub fn drawable_mask_counts(&self) -> &[i32] {
         unsafe { slice::from_raw_parts(core::csmGetDrawableMaskCounts(self.as_ptr()), self.drawable_count()) }
     }
 
     /// Returns the drawable mask for the given index
-    pub fn drawable_mask(&self, idx: usize) -> &[i32] {
+    pub fn drawable_masks(&self, idx: usize) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
                 slice::from_raw_parts(core::csmGetDrawableMasks(self.as_ptr()), self.drawable_count())[idx] as *const _,
@@ -200,8 +188,19 @@ Rendering::CubismRenderer::CubismBlendMode CubismModel::GetDrawableBlendMode(csm
         (0..self.drawable_count()).any(|i| maskcounts[i] <= 0)
     }
 
-    //todo replace slices with asserts and pointer arithmetic
-    //etc
+    /// Returns the constant flags
+    pub fn drawable_constant_flags(&self) -> &[ConstantFlags] {
+        unsafe {
+            slice::from_raw_parts(core::csmGetDrawableConstantFlags(self.as_ptr()) as *const ConstantFlags, self.drawable_count())
+        }
+    }
+
+    /// Returns the dynamic flags
+    pub fn drawable_dynamic_flags(&self) -> &[DynamicFlags] {
+        unsafe {
+            slice::from_raw_parts(core::csmGetDrawableDynamicFlags(self.as_ptr()) as *const DynamicFlags, self.drawable_count())
+        }
+    }
 }
 
 //Constructors
@@ -210,7 +209,7 @@ impl Model {
     pub fn from_bytes(data: &[u8]) -> Result<Self, CubismError> {
         let mut moc = Moc::new(data)?;
         let model_mem = moc.init_new_model()?;
-        moc.init_ids(&model_mem);
+        moc.init_ids(&model_mem)?;
         Ok(Self::new_impl(Rc::new(moc), model_mem))
     }
 

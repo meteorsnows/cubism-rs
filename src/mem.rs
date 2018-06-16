@@ -1,7 +1,6 @@
 use std::alloc::{Alloc, AllocErr, Global, Layout};
 use std::ptr::NonNull;
 use std::fmt;
-use std::ops;
 
 /// A block of memory that has a specific alignment
 pub struct AlignedMemory<T> {

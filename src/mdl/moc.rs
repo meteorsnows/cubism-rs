@@ -1,14 +1,12 @@
-use std::alloc::Layout;
+use libc::c_char;
 
-use std::os::raw::c_char;
+use std::alloc::Layout;
 use std::slice;
 
 use core::{self, csmAlignofMoc, csmAlignofModel, csmMoc, csmModel};
 
 use mem::AlignedMemory;
-use CubismError;
-
-type Result<T> = ::std::result::Result<T, CubismError>;
+use {CubismError, Result};
 
 /// Represents the Moc struct. Every Model instance owns an Rc<Moc>.
 /// This Moc kind of represents a shared immutable state of the models that are based on it.
@@ -53,13 +51,13 @@ impl Moc {
         self.param_def_val
     }
 
-    /// todo: Is this really needed? You can get this value by invoking len on any of the slices
+    /// Returns the number of parameters this moc has
     #[inline]
     pub fn parameter_count(&self) -> usize {
         self.param_ids.len()
     }
 
-    /// todo: Is this really needed? You can get this value by invoking len on the part_ids slice
+    /// Returns the number of parts this moc has
     #[inline]
     pub fn part_count(&self) -> usize {
         self.part_ids.len()
@@ -87,43 +85,44 @@ impl Moc {
         }
     }
 
+    /// Returns the raw csmMoc ptr
     #[inline]
     pub fn as_ptr(&self) -> *const csmMoc {
         self.mem.as_ptr()
     }
 
+    /// Returns the raw csmMoc ptr
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut csmMoc {
         self.mem.as_mut_ptr()
     }
 
-    ///Called once when the first model of a moc is created to initialize the shared `str` storage
-    pub(crate) fn init_ids(&mut self, model: &AlignedMemory<csmModel>) {
+    /// Called once when the first model of a moc is created to initialize the shared `str` storage
+    pub(crate) fn init_ids(&mut self, model: &AlignedMemory<csmModel>) -> Result<()> {
         debug_assert!(self.param_ids.is_empty());//Make sure that this hasnt been called before
         unsafe {
             let param_count = core::csmGetParameterCount(model.as_ptr()) as usize;
             let param_ids = core::csmGetParameterIds(model.as_ptr());
-            self.param_ids = Self::init_id_vec(param_ids, param_count);
+            self.param_ids = Self::init_id_vec(param_ids, param_count)?;
             let part_count = core::csmGetPartCount(model.as_ptr()) as usize;
             let part_ids = core::csmGetPartIds(model.as_ptr());
-            self.part_ids = Self::init_id_vec(part_ids, part_count);
+            self.part_ids = Self::init_id_vec(part_ids, part_count)?;
             self.param_def_val = slice::from_raw_parts(core::csmGetParameterDefaultValues(model.as_ptr()), param_count) ;
             self.param_max_val = slice::from_raw_parts(core::csmGetParameterMaximumValues(model.as_ptr()), param_count);
             self.param_min_val = slice::from_raw_parts(core::csmGetParameterMinimumValues(model.as_ptr()), param_count);
         }
+        Ok(())
     }
 
-    fn init_id_vec(ptr: *mut *const c_char, len: usize) -> Vec<&'static str> {
+    fn init_id_vec(ptr: *mut *const c_char, len: usize) -> Result<Vec<&'static str>> {
         use std::ffi::CStr;
         let mut out = Vec::with_capacity(len);
-        for ptr in unsafe { ::std::slice::from_raw_parts_mut(ptr, len).iter() } {
+        for ptr in unsafe { slice::from_raw_parts_mut(ptr, len).iter() } {
             unsafe {
-                if let Ok(string) = CStr::from_ptr(*ptr).to_str() {
-                    out.push(string);
-                }
+                out.push(CStr::from_ptr(*ptr).to_str()?);
             }
         }
-        out
+        Ok(out)
     }
 
     ///Creates a new model from this moc
