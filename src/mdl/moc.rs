@@ -1,3 +1,5 @@
+//! The moc struct
+
 use libc::c_char;
 
 use std::{ptr, slice};
@@ -7,8 +9,13 @@ use core::{self, csmMoc, csmModel};
 use mem::AlignedMemory;
 use {CubismError, Result};
 
-/// Represents the Moc struct. Every Model instance owns an Rc<Moc>.
-/// This Moc kind of represents a shared immutable state of the models that are based on it.
+/// This represents a moc.
+///
+/// A moc should never exists without at least one model instance, it
+/// owns the parameter and part ids as well as the minimum, maximum and default parameter values of its [Model](../model/struct.Model.html).
+/// The struct itself is immutable once created, so all these values never change either.
+///
+/// You normally never have to interact with it on it's own.
 #[derive(Debug)]
 pub struct Moc {
     mem: AlignedMemory<csmMoc>,
@@ -85,13 +92,13 @@ impl Moc {
         }
     }
 
-    /// Returns the raw csmMoc ptr
+    /// Returns the raw [csmMoc](../../cubism_core_sys/moc/struct.csmMoc.html) ptr
     #[inline]
     pub fn as_ptr(&self) -> *const csmMoc {
         self.mem.as_ptr()
     }
 
-    /// Returns the raw csmMoc ptr
+    /// Returns the raw [csmMoc](../../cubism_core_sys/moc/struct.csmMoc.html) ptr
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut csmMoc {
         self.mem.as_mut_ptr()

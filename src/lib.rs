@@ -1,11 +1,10 @@
+//! A framework for Live2D's cubism sdk
+#![deny(missing_docs)]
+
 extern crate cubism_core_sys as core;
 extern crate libc;
 #[macro_use]
 extern crate bitflags;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
 
 use std::{error, fmt, io, str};
 
@@ -32,13 +31,13 @@ pub(crate) type Result<T> = ::std::result::Result<T, CubismError>;
 pub enum CubismError {
     /// The `ReviveMocInPlace` function failed.
     ReviveMocInPlace,
-    /// The `IntiializeModelInPlace` function failed.
+    /// The `InitializeModelInPlace` function failed.
     InitializeModelInPlace,
-    /// A Parameter or Part had a non-utf8 id, which is not supported
+    /// A Parameter or Part had an invalid Id, a malformed utf8 string for example
     InvalidId(str::Utf8Error),
     /// An I/O error occured.
     Io(io::Error),
-    ///
+    /// A different error
     Other(String),
 }
 
