@@ -1,6 +1,6 @@
 use libc::c_char;
 
-use std::{slice, ptr};
+use std::{ptr, slice};
 
 use core::{self, csmMoc, csmModel};
 
@@ -68,7 +68,9 @@ impl Moc {
         let mut mem = AlignedMemory::new(data.len())?;
         unsafe {
             ptr::copy(data.as_ptr(), mem.as_mut_ptr() as *mut u8, data.len());
-            if core::csmReviveMocInPlace(mem.as_mut_ptr() as *mut _, mem.layout().size() as u32).is_null() {
+            if core::csmReviveMocInPlace(mem.as_mut_ptr() as *mut _, mem.layout().size() as u32)
+                .is_null()
+            {
                 Err(CubismError::ReviveMocInPlace)
             } else {
                 Ok(Moc {
@@ -97,7 +99,7 @@ impl Moc {
 
     /// Called once when the first model of a moc is created to initialize the shared `str` storage
     pub(crate) fn init_ids(&mut self, model: &AlignedMemory<csmModel>) -> Result<()> {
-        debug_assert!(self.param_ids.is_empty());//Make sure that this hasnt been called before
+        debug_assert!(self.param_ids.is_empty()); //Make sure that this hasnt been called before
         unsafe {
             let param_count = core::csmGetParameterCount(model.as_ptr()) as usize;
             let param_ids = core::csmGetParameterIds(model.as_ptr());
@@ -105,9 +107,18 @@ impl Moc {
             let part_count = core::csmGetPartCount(model.as_ptr()) as usize;
             let part_ids = core::csmGetPartIds(model.as_ptr());
             self.part_ids = Self::init_id_vec(part_ids, part_count)?;
-            self.param_def_val = slice::from_raw_parts(core::csmGetParameterDefaultValues(model.as_ptr()), param_count) ;
-            self.param_max_val = slice::from_raw_parts(core::csmGetParameterMaximumValues(model.as_ptr()), param_count);
-            self.param_min_val = slice::from_raw_parts(core::csmGetParameterMinimumValues(model.as_ptr()), param_count);
+            self.param_def_val = slice::from_raw_parts(
+                core::csmGetParameterDefaultValues(model.as_ptr()),
+                param_count,
+            );
+            self.param_max_val = slice::from_raw_parts(
+                core::csmGetParameterMaximumValues(model.as_ptr()),
+                param_count,
+            );
+            self.param_min_val = slice::from_raw_parts(
+                core::csmGetParameterMinimumValues(model.as_ptr()),
+                param_count,
+            );
         }
         Ok(())
     }
@@ -129,7 +140,12 @@ impl Moc {
             let model_size = core::csmGetSizeofModel(self.mem.as_ptr());
             let mut model_mem: AlignedMemory<csmModel> = AlignedMemory::new(model_size as usize)?;
 
-            if core::csmInitializeModelInPlace(self.mem.as_ptr(), model_mem.as_mut_ptr() as *mut _, model_size).is_null() {
+            if core::csmInitializeModelInPlace(
+                self.mem.as_ptr(),
+                model_mem.as_mut_ptr() as *mut _,
+                model_size,
+            ).is_null()
+            {
                 Err(CubismError::InitializeModelInPlace)
             } else {
                 Ok(model_mem)

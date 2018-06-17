@@ -1,7 +1,7 @@
 #![feature(allocator_api)]
 
-extern crate libc;
 extern crate cubism_core_sys as core;
+extern crate libc;
 #[macro_use]
 extern crate bitflags;
 extern crate serde;
@@ -9,14 +9,14 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use std::{error, fmt, alloc, io, str};
+use std::{alloc, error, fmt, io, str};
 
-mod mem;
-mod mdl;
 mod flags;
+mod mdl;
+mod mem;
 
-pub use mdl::*;
 pub use flags::*;
+pub use mdl::*;
 
 /// Returns the linked library version in a (version, major, minor, patch) tuple
 pub fn version() -> (u32, u32, u32, u32) {
@@ -60,7 +60,9 @@ impl fmt::Display for CubismError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             CubismError::ReviveMocInPlace => write!(fmt, "failed to revive moc in aligned memory"),
-            CubismError::InitializeModelInPlace => write!(fmt, "failed to revive moc in aligned memory"),
+            CubismError::InitializeModelInPlace => {
+                write!(fmt, "failed to revive moc in aligned memory")
+            }
             CubismError::InvalidId(ref err) => err.fmt(fmt),
             CubismError::Alloc(ref err) => err.fmt(fmt),
             CubismError::Io(ref err) => err.fmt(fmt),

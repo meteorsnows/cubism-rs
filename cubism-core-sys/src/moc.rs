@@ -1,11 +1,10 @@
-use libc::c_uint;
-use libc::c_void;
+use libc::{c_uint, c_void};
 
 pub const csmAlignofMoc: usize = 64;
 
 #[repr(C, align(64))]
 pub struct csmMoc {
-    _unused: [u64; 0]
+    _unused: [u64; 0],
 }
 
 extern "C" {

@@ -3,15 +3,15 @@ extern crate cubism;
 extern crate gfx;
 extern crate nalgebra as na;
 
-use na::Matrix4;
 use cubism::model::Model;
+use na::Matrix4;
 
-use gfx::{Bundle, CommandBuffer, Encoder, Factory, IntoIndexBuffer, Resources, Slice};
-use gfx::memory::Bind;
 use gfx::handle::{Buffer, RenderTargetView};
+use gfx::memory::Bind;
 use gfx::texture::{FilterMethod, SamplerInfo, WrapMode};
 use gfx::traits::FactoryExt;
 use gfx::TextureSampler;
+use gfx::{Bundle, CommandBuffer, Encoder, Factory, IntoIndexBuffer, Resources, Slice};
 
 #[derive(Copy, Clone)]
 pub struct Color(f32, f32, f32, f32);
@@ -21,15 +21,31 @@ impl Color {
         Color(r, g, b, a)
     }
 
-    pub fn r(&self) -> f32 { self.0 }
-    pub fn g(&self) -> f32 { self.1 }
-    pub fn b(&self) -> f32 { self.2 }
-    pub fn a(&self) -> f32 { self.3 }
+    pub fn r(&self) -> f32 {
+        self.0
+    }
+    pub fn g(&self) -> f32 {
+        self.1
+    }
+    pub fn b(&self) -> f32 {
+        self.2
+    }
+    pub fn a(&self) -> f32 {
+        self.3
+    }
 
-    pub fn set_r(&mut self, val: f32) { self.0 = val; }
-    pub fn set_g(&mut self, val: f32) { self.1 = val; }
-    pub fn set_b(&mut self, val: f32) { self.2 = val; }
-    pub fn set_a(&mut self, val: f32) { self.3 = val; }
+    pub fn set_r(&mut self, val: f32) {
+        self.0 = val;
+    }
+    pub fn set_g(&mut self, val: f32) {
+        self.1 = val;
+    }
+    pub fn set_b(&mut self, val: f32) {
+        self.2 = val;
+    }
+    pub fn set_a(&mut self, val: f32) {
+        self.3 = val;
+    }
 }
 
 type ColorFormat = gfx::format::Rgba8;
@@ -44,21 +60,28 @@ pub enum RendererError {
 }
 
 impl From<gfx::UpdateError<usize>> for RendererError {
-    fn from(e: gfx::UpdateError<usize>) -> RendererError { RendererError::Update(e) }
+    fn from(e: gfx::UpdateError<usize>) -> RendererError {
+        RendererError::Update(e)
+    }
 }
 
 impl From<gfx::buffer::CreationError> for RendererError {
-    fn from(e: gfx::buffer::CreationError) -> RendererError { RendererError::Buffer(e) }
+    fn from(e: gfx::buffer::CreationError) -> RendererError {
+        RendererError::Buffer(e)
+    }
 }
 
 impl From<gfx::PipelineStateError<String>> for RendererError {
-    fn from(e: gfx::PipelineStateError<String>) -> RendererError { RendererError::Pipeline(e) }
+    fn from(e: gfx::PipelineStateError<String>) -> RendererError {
+        RendererError::Pipeline(e)
+    }
 }
 
 impl From<gfx::CombinedError> for RendererError {
-    fn from(e: gfx::CombinedError) -> RendererError { RendererError::Combined(e) }
+    fn from(e: gfx::CombinedError) -> RendererError {
+        RendererError::Combined(e)
+    }
 }
-
 
 gfx_defines!{
     vertex Vertex {
@@ -82,7 +105,7 @@ gfx_defines!{
 pub enum BlendMode {
     Normal,
     Additive,
-    Multiplicative
+    Multiplicative,
 }
 
 fn copy_unsized_to_fixedsize(mat: &[f32], slice: &mut [[f32; 4]; 4]) {
@@ -100,8 +123,15 @@ pub struct Renderer<R: Resources> {
 }
 
 impl<R: Resources> Renderer<R> {
-    pub fn init<F: Factory<R>>(factory: &mut F, target: RenderTargetView<R, ColorFormat>) -> RendererResult<Self> {
-        let pso = factory.create_pipeline_simple(include_bytes!("../shader/gl/330.vert"), include_bytes!("../shader/gl/330.frag"), pipe::new())?;
+    pub fn init<F: Factory<R>>(
+        factory: &mut F,
+        target: RenderTargetView<R, ColorFormat>,
+    ) -> RendererResult<Self> {
+        let pso = factory.create_pipeline_simple(
+            include_bytes!("../shader/gl/330.vert"),
+            include_bytes!("../shader/gl/330.frag"),
+            pipe::new(),
+        )?;
         let vertex_buffer = factory.create_buffer::<Vertex>(
             256,
             gfx::buffer::Role::Vertex,
@@ -114,14 +144,13 @@ impl<R: Resources> Renderer<R> {
             gfx::memory::Usage::Dynamic,
             Bind::empty(),
         )?;
-        let (_, texture) = factory.create_texture_immutable_u8::<gfx::format::Rgba8>(
-            gfx::texture::Kind::D2(
-                2,
-                2,
-                gfx::texture::AaMode::Single,
-            ),
-            gfx::texture::Mipmap::Provided,
-            &[&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).unwrap();
+        let (_, texture) = factory
+            .create_texture_immutable_u8::<gfx::format::Rgba8>(
+                gfx::texture::Kind::D2(2, 2, gfx::texture::AaMode::Single),
+                gfx::texture::Mipmap::Provided,
+                &[&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+            )
+            .unwrap();
         let sampler =
             factory.create_sampler(SamplerInfo::new(FilterMethod::Scale, WrapMode::Clamp));
         let mut data = pipe::Data {
@@ -146,7 +175,16 @@ impl<R: Resources> Renderer<R> {
         })
     }
 
-    pub fn draw_model<F: Factory<R>, C: CommandBuffer<R>>(&mut self, factory: &mut F, encoder: &mut Encoder<R, C>, model: &Model, (texture, sampler): (&gfx::handle::ShaderResourceView<R, [f32; 4]>, &gfx::handle::Sampler<R>)) -> RendererResult<()> {
+    pub fn draw_model<F: Factory<R>, C: CommandBuffer<R>>(
+        &mut self,
+        factory: &mut F,
+        encoder: &mut Encoder<R, C>,
+        model: &Model,
+        (texture, sampler): (
+            &gfx::handle::ShaderResourceView<R, [f32; 4]>,
+            &gfx::handle::Sampler<R>,
+        ),
+    ) -> RendererResult<()> {
         self.bundle.data.tex = (texture.clone(), sampler.clone());
 
         let mut sorted_draw_indices = vec![0; model.drawable_count()];
@@ -164,7 +202,13 @@ impl<R: Resources> Renderer<R> {
         Ok(())
     }
 
-    fn draw_mesh<F: Factory<R>, C: CommandBuffer<R>>(&mut self, factory: &mut F, encoder: &mut Encoder<R, C>, model: &Model, index: usize) -> RendererResult<()> {
+    fn draw_mesh<F: Factory<R>, C: CommandBuffer<R>>(
+        &mut self,
+        factory: &mut F,
+        encoder: &mut Encoder<R, C>,
+        model: &Model,
+        index: usize,
+    ) -> RendererResult<()> {
         let opacity = model.drawable_opacities()[index];
         if opacity <= 0.0 {
             return Ok(());
@@ -206,11 +250,7 @@ impl<R: Resources> Renderer<R> {
                 Bind::empty(),
             )?;
         }
-        encoder.update_buffer(
-            &self.bundle.data.vertex_buffer,
-            vtx_buffer,
-            0,
-        )?;
+        encoder.update_buffer(&self.bundle.data.vertex_buffer, vtx_buffer, 0)?;
         Ok(())
     }
 

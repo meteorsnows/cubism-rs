@@ -1,8 +1,4 @@
-use libc::c_char;
-use libc::c_uchar;
-use libc::c_float;
-use libc::c_int;
-use libc::c_ushort;
+use libc::{c_char, c_float, c_int, c_uchar, c_ushort};
 
 use csmVector2;
 use model::csmModel;
@@ -21,8 +17,12 @@ pub const csmVertexPositionsDidChange: csmFlags = 1 << 5;
 pub type csmFlags = c_uchar;
 
 extern "C" {
-    pub fn csmReadCanvasInfo(model: *const csmModel, outSizeInPixels: *mut csmVector2,
-                             outOriginalInPixels: *mut csmVector2, outPixelsPerUnit: *mut c_float);
+    pub fn csmReadCanvasInfo(
+        model: *const csmModel,
+        outSizeInPixels: *mut csmVector2,
+        outOriginalInPixels: *mut csmVector2,
+        outPixelsPerUnit: *mut c_float,
+    );
 }
 
 extern "C" {

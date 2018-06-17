@@ -1,12 +1,12 @@
 use std::alloc::{Alloc, AllocErr, Global, Layout};
-use std::ptr::NonNull;
 use std::fmt;
 use std::mem;
+use std::ptr::NonNull;
 
 /// A block of memory that has a specific alignment
 pub struct AlignedMemory<T> {
     ptr: NonNull<T>,
-    layout: Layout
+    layout: Layout,
 }
 
 impl<T> fmt::Debug for AlignedMemory<T> {
@@ -22,10 +22,7 @@ impl<T> AlignedMemory<T> {
     pub fn new(size: usize) -> Result<Self, AllocErr> {
         let layout = Layout::from_size_align(size, mem::align_of::<T>()).unwrap();
         let ptr = unsafe { Global.alloc(layout)? }.cast();
-        Ok(AlignedMemory {
-            ptr,
-            layout
-        })
+        Ok(AlignedMemory { ptr, layout })
     }
 
     pub fn layout(&self) -> &Layout {

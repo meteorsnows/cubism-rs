@@ -1,8 +1,10 @@
 use libc::c_uchar;
 
-use core::{csmBlendAdditive, csmBlendMultiplicative, csmIsDoubleSided, csmIsVisible,
-           csmVisibilityDidChange, csmOpacityDidChange, csmDrawOrderDidChange,
-           csmRenderOrderDidChange, csmVertexPositionsDidChange};
+use core::{
+    csmBlendAdditive, csmBlendMultiplicative, csmDrawOrderDidChange, csmIsDoubleSided,
+    csmIsVisible, csmOpacityDidChange, csmRenderOrderDidChange, csmVertexPositionsDidChange,
+    csmVisibilityDidChange,
+};
 
 bitflags! {
     #[repr(C)]

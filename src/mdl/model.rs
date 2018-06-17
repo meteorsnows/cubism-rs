@@ -1,15 +1,14 @@
-use std::rc::Rc;
-use std::ops;
-use std::slice;
 use std::io::Read;
+use std::ops;
+use std::rc::Rc;
+use std::slice;
 
 use mem::AlignedMemory;
 
-use core::{self, csmModel};
 use super::moc::Moc;
-use CubismError;
+use core::{self, csmModel};
 use flags::{ConstantFlags, DynamicFlags};
-
+use CubismError;
 
 #[derive(Debug)]
 pub struct Model {
@@ -79,8 +78,8 @@ impl Model {
 //member funcs
 impl Model {
     pub fn canvas_dimensions(&self) -> (f32, f32) {
-        let mut size = core::csmVector2 { x: 0.0, y: 0.0};
-        let mut origin = core::csmVector2 { x: 0.0, y: 0.0};
+        let mut size = core::csmVector2 { x: 0.0, y: 0.0 };
+        let mut origin = core::csmVector2 { x: 0.0, y: 0.0 };
         let mut ppu = 0.0;
         unsafe {
             core::csmReadCanvasInfo(self.mem.as_ptr(), &mut size, &mut origin, &mut ppu);
@@ -114,19 +113,39 @@ impl Model {
     }
 
     pub fn drawable_render_orders(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableRenderOrders(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableRenderOrders(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     pub fn drawable_draw_orders(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableDrawOrders(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableDrawOrders(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     pub fn drawable_texture_indices(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableTextureIndices(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableTextureIndices(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     pub fn drawable_index_counts(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableIndexCounts(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableIndexCounts(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     pub fn drawable_indices(&self, idx: usize) -> &[u16] {
@@ -134,21 +153,27 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 *core::csmGetDrawableIndices(self.as_ptr()).offset(idx as isize),
-                self.drawable_index_counts()[idx] as usize
+                self.drawable_index_counts()[idx] as usize,
             )
         }
     }
 
     pub fn drawable_vertex_counts(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableVertexCounts(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableVertexCounts(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     pub fn drawable_vertex_positions(&self, idx: usize) -> &[(f32, f32)] {
         debug_assert!(idx < self.drawable_count());
         unsafe {
             slice::from_raw_parts(
-                *core::csmGetDrawableVertexPositions(self.as_ptr()).offset(idx as isize) as *const _,
-                self.drawable_vertex_counts()[idx] as usize
+                *core::csmGetDrawableVertexPositions(self.as_ptr()).offset(idx as isize)
+                    as *const _,
+                self.drawable_vertex_counts()[idx] as usize,
             )
         }
     }
@@ -158,26 +183,39 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 *core::csmGetDrawableVertexUvs(self.as_ptr()).offset(idx as isize) as *const _,
-                self.drawable_vertex_counts()[idx] as usize
+                self.drawable_vertex_counts()[idx] as usize,
             )
         }
     }
 
     pub fn drawable_opacities(&self) -> &[f32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableOpacities(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableOpacities(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     /// make masks an iterator?
     pub fn drawable_mask_counts(&self) -> &[i32] {
-        unsafe { slice::from_raw_parts(core::csmGetDrawableMaskCounts(self.as_ptr()), self.drawable_count()) }
+        unsafe {
+            slice::from_raw_parts(
+                core::csmGetDrawableMaskCounts(self.as_ptr()),
+                self.drawable_count(),
+            )
+        }
     }
 
     /// Returns the drawable mask for the given index
     pub fn drawable_masks(&self, idx: usize) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
-                slice::from_raw_parts(core::csmGetDrawableMasks(self.as_ptr()), self.drawable_count())[idx] as *const _,
-                self.drawable_mask_counts()[idx] as usize
+                slice::from_raw_parts(
+                    core::csmGetDrawableMasks(self.as_ptr()),
+                    self.drawable_count(),
+                )[idx] as *const _,
+                self.drawable_mask_counts()[idx] as usize,
             )
         }
     }
@@ -191,14 +229,20 @@ impl Model {
     /// Returns the constant flags
     pub fn drawable_constant_flags(&self) -> &[ConstantFlags] {
         unsafe {
-            slice::from_raw_parts(core::csmGetDrawableConstantFlags(self.as_ptr()) as *const ConstantFlags, self.drawable_count())
+            slice::from_raw_parts(
+                core::csmGetDrawableConstantFlags(self.as_ptr()) as *const ConstantFlags,
+                self.drawable_count(),
+            )
         }
     }
 
     /// Returns the dynamic flags
     pub fn drawable_dynamic_flags(&self) -> &[DynamicFlags] {
         unsafe {
-            slice::from_raw_parts(core::csmGetDrawableDynamicFlags(self.as_ptr()) as *const DynamicFlags, self.drawable_count())
+            slice::from_raw_parts(
+                core::csmGetDrawableDynamicFlags(self.as_ptr()) as *const DynamicFlags,
+                self.drawable_count(),
+            )
         }
     }
 }
@@ -238,8 +282,14 @@ impl Model {
 
     pub(crate) fn new_impl(moc: Rc<Moc>, mut mem: AlignedMemory<core::csmModel>) -> Model {
         unsafe {
-            let param_values = slice::from_raw_parts_mut(core::csmGetParameterValues(mem.as_mut_ptr()), moc.parameter_count());
-            let part_opacities = slice::from_raw_parts_mut(core::csmGetPartOpacities(mem.as_mut_ptr()), moc.part_count());
+            let param_values = slice::from_raw_parts_mut(
+                core::csmGetParameterValues(mem.as_mut_ptr()),
+                moc.parameter_count(),
+            );
+            let part_opacities = slice::from_raw_parts_mut(
+                core::csmGetPartOpacities(mem.as_mut_ptr()),
+                moc.part_count(),
+            );
 
             Model {
                 mem,
