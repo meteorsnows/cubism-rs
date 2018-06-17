@@ -1,9 +1,8 @@
 use libc::c_char;
 
-use std::alloc::Layout;
-use std::slice;
+use std::{slice, ptr};
 
-use core::{self, csmAlignofMoc, csmAlignofModel, csmMoc, csmModel};
+use core::{self, csmMoc, csmModel};
 
 use mem::AlignedMemory;
 use {CubismError, Result};
@@ -66,10 +65,9 @@ impl Moc {
 
 impl Moc {
     pub(crate) fn new(data: &[u8]) -> Result<Self> {
-        let layout = Layout::from_size_align(data.len(), csmAlignofMoc)?;
-        let mut mem = AlignedMemory::from_layout(layout)?;
+        let mut mem = AlignedMemory::new(data.len())?;
         unsafe {
-            ::std::ptr::copy(data.as_ptr(), mem.as_mut_ptr() as *mut u8, data.len());
+            ptr::copy(data.as_ptr(), mem.as_mut_ptr() as *mut u8, data.len());
             if core::csmReviveMocInPlace(mem.as_mut_ptr() as *mut _, mem.layout().size() as u32).is_null() {
                 Err(CubismError::ReviveMocInPlace)
             } else {
@@ -129,8 +127,7 @@ impl Moc {
     pub(crate) fn init_new_model(&self) -> Result<AlignedMemory<csmModel>> {
         unsafe {
             let model_size = core::csmGetSizeofModel(self.mem.as_ptr());
-            let layout = Layout::from_size_align(model_size as usize, csmAlignofModel)?;
-            let mut model_mem: AlignedMemory<csmModel> = AlignedMemory::from_layout(layout)?;
+            let mut model_mem: AlignedMemory<csmModel> = AlignedMemory::new(model_size as usize)?;
 
             if core::csmInitializeModelInPlace(self.mem.as_ptr(), model_mem.as_mut_ptr() as *mut _, model_size).is_null() {
                 Err(CubismError::InitializeModelInPlace)

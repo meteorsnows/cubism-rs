@@ -8,7 +8,7 @@ use moc::csmMoc;
 
 pub const csmAlignofModel: usize = 16;
 
-#[repr(C)]
+#[repr(C, align(16))]
 pub struct csmModel {
     _unused: [u16; 0]
 }
@@ -28,4 +28,9 @@ extern "C" {
     pub fn csmGetPartCount(model: *const csmModel) -> c_int;
     pub fn csmGetPartIds(model: *const csmModel) -> *mut *const c_char;
     pub fn csmGetPartOpacities(model: *mut csmModel) -> *mut c_float;
+}
+
+#[test]
+fn model_alignment() {
+    assert_eq!(::std::mem::align_of::<csmModel>(), csmAlignofModel);
 }

@@ -38,8 +38,6 @@ pub enum CubismError {
     InitializeModelInPlace,
     /// A Parameter or Part had a non-utf8 id, which is not supported
     InvalidId(str::Utf8Error),
-    /// A layout error occured.
-    Layout(alloc::LayoutErr),
     /// An allocation error occured.
     Alloc(alloc::AllocErr),
     /// An I/O error occured.
@@ -52,7 +50,6 @@ impl error::Error for CubismError {
             CubismError::ReviveMocInPlace => "failed to revive moc in aligned memory",
             CubismError::InitializeModelInPlace => "failed to revive moc in aligned memory",
             CubismError::InvalidId(ref err) => err.description(),
-            CubismError::Layout(ref err) => err.description(),
             CubismError::Alloc(ref err) => err.description(),
             CubismError::Io(ref err) => err.description(),
         }
@@ -65,7 +62,6 @@ impl fmt::Display for CubismError {
             CubismError::ReviveMocInPlace => write!(fmt, "failed to revive moc in aligned memory"),
             CubismError::InitializeModelInPlace => write!(fmt, "failed to revive moc in aligned memory"),
             CubismError::InvalidId(ref err) => err.fmt(fmt),
-            CubismError::Layout(ref err) => err.fmt(fmt),
             CubismError::Alloc(ref err) => err.fmt(fmt),
             CubismError::Io(ref err) => err.fmt(fmt),
         }
@@ -75,12 +71,6 @@ impl fmt::Display for CubismError {
 impl From<str::Utf8Error> for CubismError {
     fn from(e: str::Utf8Error) -> CubismError {
         CubismError::InvalidId(e)
-    }
-}
-
-impl From<alloc::LayoutErr> for CubismError {
-    fn from(e: alloc::LayoutErr) -> CubismError {
-        CubismError::Layout(e)
     }
 }
 
