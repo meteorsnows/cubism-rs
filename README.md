@@ -2,9 +2,8 @@
 
 A rust wrapper around the [Live2D Cubism SDK](https://live2d.github.io/) with extra functionality.
 
-This library currently requires nightly to work due to the use of the allocator api. I would love
-to remove this constraint but I do not know of a way to allocate a dst with a specific alignment
-without the use of the raw allocator api.
+
+Requires Rust 1.28+ to build due to the use of the `global_alloc` feature.
 
 
 The exposed api is completely unstable atm and is very likely to change!

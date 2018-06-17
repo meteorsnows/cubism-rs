@@ -1,11 +1,12 @@
-use std::alloc::{Alloc, AllocErr, Global, Layout};
+use std::alloc::{self, Layout};
 use std::fmt;
 use std::mem;
-use std::ptr::NonNull;
+
+use Result;
 
 /// A block of memory that has a specific alignment
 pub struct AlignedMemory<T> {
-    ptr: NonNull<T>,
+    ptr: *mut T,
     layout: Layout,
 }
 
@@ -19,10 +20,14 @@ impl<T> fmt::Debug for AlignedMemory<T> {
 }
 
 impl<T> AlignedMemory<T> {
-    pub fn new(size: usize) -> Result<Self, AllocErr> {
+    pub fn new(size: usize) -> Result<Self> {
         let layout = Layout::from_size_align(size, mem::align_of::<T>()).unwrap();
-        let ptr = unsafe { Global.alloc(layout)? }.cast();
-        Ok(AlignedMemory { ptr, layout })
+        let ptr = unsafe { alloc::alloc(layout) as *mut T };
+        if ptr.is_null() {
+            Err("Allocation error".into())
+        } else {
+            Ok(AlignedMemory { ptr, layout })
+        }
     }
 
     pub fn layout(&self) -> &Layout {
@@ -30,16 +35,16 @@ impl<T> AlignedMemory<T> {
     }
 
     pub fn as_ptr(&self) -> *const T {
-        self.ptr.as_ptr()
+        self.ptr
     }
 
     pub fn as_mut_ptr(&mut self) -> *mut T {
-        self.ptr.as_ptr()
+        self.ptr
     }
 }
 
 impl<T> Drop for AlignedMemory<T> {
     fn drop(&mut self) {
-        unsafe { Global.dealloc(self.ptr.cast(), self.layout) };
+        unsafe { alloc::dealloc(self.ptr as *mut u8, self.layout) };
     }
 }

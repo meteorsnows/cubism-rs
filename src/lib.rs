@@ -1,5 +1,3 @@
-#![feature(allocator_api)]
-
 extern crate cubism_core_sys as core;
 extern crate libc;
 #[macro_use]
@@ -9,7 +7,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use std::{alloc, error, fmt, io, str};
+use std::{error, fmt, io, str};
 
 mod flags;
 mod mdl;
@@ -38,10 +36,10 @@ pub enum CubismError {
     InitializeModelInPlace,
     /// A Parameter or Part had a non-utf8 id, which is not supported
     InvalidId(str::Utf8Error),
-    /// An allocation error occured.
-    Alloc(alloc::AllocErr),
     /// An I/O error occured.
     Io(io::Error),
+    ///
+    Other(String),
 }
 
 impl error::Error for CubismError {
@@ -50,8 +48,8 @@ impl error::Error for CubismError {
             CubismError::ReviveMocInPlace => "failed to revive moc in aligned memory",
             CubismError::InitializeModelInPlace => "failed to revive moc in aligned memory",
             CubismError::InvalidId(ref err) => err.description(),
-            CubismError::Alloc(ref err) => err.description(),
             CubismError::Io(ref err) => err.description(),
+            CubismError::Other(ref s) => s,
         }
     }
 }
@@ -64,8 +62,8 @@ impl fmt::Display for CubismError {
                 write!(fmt, "failed to revive moc in aligned memory")
             }
             CubismError::InvalidId(ref err) => err.fmt(fmt),
-            CubismError::Alloc(ref err) => err.fmt(fmt),
             CubismError::Io(ref err) => err.fmt(fmt),
+            CubismError::Other(ref s) => fmt.write_str(s),
         }
     }
 }
@@ -76,14 +74,14 @@ impl From<str::Utf8Error> for CubismError {
     }
 }
 
-impl From<alloc::AllocErr> for CubismError {
-    fn from(e: alloc::AllocErr) -> CubismError {
-        CubismError::Alloc(e)
-    }
-}
-
 impl From<io::Error> for CubismError {
     fn from(e: io::Error) -> CubismError {
         CubismError::Io(e)
+    }
+}
+
+impl<'a> From<&'a str> for CubismError {
+    fn from(e: &'a str) -> CubismError {
+        CubismError::Other(e.to_owned())
     }
 }
