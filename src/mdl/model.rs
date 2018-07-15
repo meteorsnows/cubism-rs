@@ -24,15 +24,18 @@ pub struct Model {
     moc: Rc<Moc>,
     param_values: &'static mut [f32],
     part_opacities: &'static mut [f32],
+    drawable_count: usize,
 }
 
 impl Model {
     /// Returns the parameter index of `name` or `None` if the parameter name does not exist in this model.
+    #[inline]
     pub fn parameter_index(&self, name: &str) -> Option<usize> {
         self.parameter_ids().iter().position(|id| *id == name)
     }
 
     /// Returns the part index of `name` or `None` if the part name does not exist in this model.
+    #[inline]
     pub fn part_index(&self, name: &str) -> Option<usize> {
         self.part_ids().iter().position(|id| *id == name)
     }
@@ -82,6 +85,7 @@ impl Model {
     }
 
     /// Returns information about this models size, origin and pixels-per-unit.
+    #[inline]
     pub fn canvas_info(&self) -> ((f32, f32), (f32, f32), f32) {
         let mut size = (0.0, 0.0);
         let mut origin = (0.0, 0.0);
@@ -93,11 +97,13 @@ impl Model {
     }
 
     /// Returns the number of drawables of this model.
+    #[inline]
     pub fn drawable_count(&self) -> usize {
-        unsafe { core::csmGetDrawableCount(self.as_ptr()) as usize }
+        self.drawable_count
     }
 
     /// Returns the render orders of the drawables.
+    #[inline]
     pub fn drawable_render_orders(&self) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -108,6 +114,7 @@ impl Model {
     }
 
     /// Returns the draw orders of the drawables.
+    #[inline]
     pub fn drawable_draw_orders(&self) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -118,6 +125,7 @@ impl Model {
     }
 
     /// Returns the texture indices of the drawables.
+    #[inline]
     pub fn drawable_texture_indices(&self) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -128,6 +136,7 @@ impl Model {
     }
 
     /// Returns the number of indices for every drawable.
+    #[inline]
     fn drawable_index_counts(&self) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -138,6 +147,7 @@ impl Model {
     }
 
     /// Returns the indices of the drawable at the specified index.
+    #[inline]
     pub fn drawable_indices(&self, idx: usize) -> &[u16] {
         unsafe {
             slice::from_raw_parts(
@@ -148,6 +158,7 @@ impl Model {
     }
 
     /// Returns the number of vertices of this model.
+    #[inline]
     pub fn drawable_vertex_counts(&self) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -158,6 +169,7 @@ impl Model {
     }
 
     /// Returns the vertex positions of the drawable at the specified index.
+    #[inline]
     pub fn drawable_vertex_positions(&self, idx: usize) -> &[(f32, f32)] {
         unsafe {
             slice::from_raw_parts(
@@ -169,6 +181,7 @@ impl Model {
     }
 
     /// Returns the uv coordinates of the drawable at the specified index.
+    #[inline]
     pub fn drawable_vertex_uvs(&self, idx: usize) -> &[(f32, f32)] {
         unsafe {
             slice::from_raw_parts(
@@ -179,6 +192,7 @@ impl Model {
     }
 
     /// Returns the drawable opacities.
+    #[inline]
     pub fn drawable_opacities(&self) -> &[f32] {
         unsafe {
             slice::from_raw_parts(
@@ -188,6 +202,7 @@ impl Model {
         }
     }
 
+    #[inline]
     fn drawable_mask_counts(&self) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -198,6 +213,7 @@ impl Model {
     }
 
     /// Returns the mask of the drawable at the specified index.
+    #[inline]
     pub fn drawable_masks(&self, idx: usize) -> &[i32] {
         unsafe {
             slice::from_raw_parts(
@@ -211,12 +227,14 @@ impl Model {
     }
 
     /// Returns true if this model is masked.
+    #[inline]
     pub fn is_masked(&self) -> bool {
         let maskcounts = self.drawable_mask_counts();
         (0..self.drawable_count()).any(|i| maskcounts[i] <= 0)
     }
 
     /// Returns the [ConstantFlags](../struct.ConstantFlags.html)
+    #[inline]
     pub fn drawable_constant_flags(&self) -> &[ConstantFlags] {
         unsafe {
             slice::from_raw_parts(
@@ -227,6 +245,7 @@ impl Model {
     }
 
     /// Returns the [DynamicFlags](../struct.DynamicFlags.html)
+    #[inline]
     pub fn drawable_dynamic_flags(&self) -> &[DynamicFlags] {
         unsafe {
             slice::from_raw_parts(
@@ -266,6 +285,7 @@ impl Model {
     }
 
     /// Creates a model instance from a reader instance
+    #[inline]
     pub fn from_reader<R: Read>(reader: &mut R) -> Result<Self, CubismError> {
         let mut buf = Vec::new();
         reader.read_to_end(&mut buf)?;
@@ -292,12 +312,14 @@ impl Model {
                 core::csmGetPartOpacities(mem.as_mut_ptr()),
                 moc.part_count(),
             );
+            let drawable_count = unsafe { core::csmGetDrawableCount(mem.as_mut_ptr()) as usize };
 
             Model {
                 mem,
                 moc,
                 param_values,
                 part_opacities,
+                drawable_count
             }
         }
     }

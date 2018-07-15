@@ -21,6 +21,7 @@ pub struct Moc {
     mem: AlignedMemory<csmMoc>,
     part_ids: Vec<&'static str>,
     param_ids: Vec<&'static str>,
+    drawable_ids: Vec<&'static str>,
     param_def_val: &'static [f32],
     param_max_val: &'static [f32],
     param_min_val: &'static [f32],
@@ -37,6 +38,12 @@ impl Moc {
     #[inline]
     pub fn parameter_ids(&self) -> &[&str] {
         &self.param_ids
+    }
+
+    /// Returns the drawable names
+    #[inline]
+    pub fn drawable_ids(&self) -> &[&str] {
+        &self.drawable_ids
     }
 
     /// Returns the parameter max values
@@ -84,6 +91,7 @@ impl Moc {
                     mem,
                     part_ids: Vec::new(),
                     param_ids: Vec::new(),
+                    drawable_ids: Vec::new(),
                     param_def_val: slice::from_raw_parts(0x1 as *const f32, 0),
                     param_max_val: slice::from_raw_parts(0x1 as *const f32, 0),
                     param_min_val: slice::from_raw_parts(0x1 as *const f32, 0),
@@ -114,6 +122,9 @@ impl Moc {
             let part_count = core::csmGetPartCount(model.as_ptr()) as usize;
             let part_ids = core::csmGetPartIds(model.as_ptr());
             self.part_ids = Self::init_id_vec(part_ids, part_count)?;
+            let drawable_count = core::csmGetDrawableCount(model.as_ptr()) as usize;
+            let drawable_ids = core::csmGetDrawableIds(model.as_ptr());
+            self.drawable_ids = Self::init_id_vec(drawable_ids, drawable_count)?;
             self.param_def_val = slice::from_raw_parts(
                 core::csmGetParameterDefaultValues(model.as_ptr()),
                 param_count,
@@ -141,7 +152,7 @@ impl Moc {
         Ok(out)
     }
 
-    ///Creates a new model from this moc
+    ///Creates a new model memory instance from this moc
     pub(crate) fn init_new_model(&self) -> Result<AlignedMemory<csmModel>> {
         unsafe {
             let model_size = core::csmGetSizeofModel(self.mem.as_ptr());
