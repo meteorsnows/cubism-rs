@@ -29,10 +29,6 @@ pub(crate) type Result<T> = ::std::result::Result<T, CubismError>;
 /// The error type returned by all fallable functions
 #[derive(Debug)]
 pub enum CubismError {
-    /// The `ReviveMocInPlace` function failed.
-    ReviveMocInPlace,
-    /// The `InitializeModelInPlace` function failed.
-    InitializeModelInPlace,
     /// A Parameter or Part had an invalid Id, a malformed utf8 string for example
     InvalidId(str::Utf8Error),
     /// An I/O error occured.
@@ -44,8 +40,6 @@ pub enum CubismError {
 impl error::Error for CubismError {
     fn description(&self) -> &str {
         match *self {
-            CubismError::ReviveMocInPlace => "failed to revive moc in aligned memory",
-            CubismError::InitializeModelInPlace => "failed to revive moc in aligned memory",
             CubismError::InvalidId(ref err) => err.description(),
             CubismError::Io(ref err) => err.description(),
             CubismError::Other(ref s) => s,
@@ -56,10 +50,6 @@ impl error::Error for CubismError {
 impl fmt::Display for CubismError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            CubismError::ReviveMocInPlace => write!(fmt, "failed to revive moc in aligned memory"),
-            CubismError::InitializeModelInPlace => {
-                write!(fmt, "failed to revive moc in aligned memory")
-            }
             CubismError::InvalidId(ref err) => err.fmt(fmt),
             CubismError::Io(ref err) => err.fmt(fmt),
             CubismError::Other(ref s) => fmt.write_str(s),

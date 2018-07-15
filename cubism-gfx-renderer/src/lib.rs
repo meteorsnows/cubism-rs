@@ -3,7 +3,7 @@ extern crate cubism;
 extern crate gfx;
 extern crate nalgebra as na;
 
-use cubism::model::Model;
+use cubism::Model;
 use na::Matrix4;
 
 use gfx::handle::{Buffer, RenderTargetView};

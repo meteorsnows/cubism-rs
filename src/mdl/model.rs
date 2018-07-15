@@ -13,7 +13,7 @@ use CubismError;
 
 /// This represents a model.
 ///
-/// A model shares its underlying [Moc](../moc/struct.Moc.html) with other models that have been cloned from this one and
+/// A model shares its underlying [Moc](./struct.Moc.html) with other models that have been cloned from this one and
 /// has control over it's own parameters and part opacities.
 ///
 /// Slices returned by functions have to be indexed by the drawable, parameter or part index for the individual value.
@@ -91,7 +91,12 @@ impl Model {
         let mut origin = (0.0, 0.0);
         let mut ppu = 0.0;
         unsafe {
-            core::csmReadCanvasInfo(self.mem.as_ptr(), &mut size as *mut (f32, f32) as *mut _, &mut origin as *mut (f32, f32) as *mut _, &mut ppu);
+            core::csmReadCanvasInfo(
+                self.mem.as_ptr(),
+                &mut size as *mut (f32, f32) as *mut _,
+                &mut origin as *mut (f32, f32) as *mut _,
+                &mut ppu,
+            );
         }
         (size, origin, ppu)
     }
@@ -108,7 +113,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableRenderOrders(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -119,7 +124,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableDrawOrders(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -130,7 +135,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableTextureIndices(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -141,7 +146,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableIndexCounts(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -163,7 +168,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableVertexCounts(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -197,7 +202,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableOpacities(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -207,7 +212,7 @@ impl Model {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableMaskCounts(self.as_ptr()),
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
@@ -219,7 +224,7 @@ impl Model {
             slice::from_raw_parts(
                 slice::from_raw_parts(
                     core::csmGetDrawableMasks(self.as_ptr()),
-                    self.drawable_count(),
+                    self.drawable_count,
                 )[idx] as *const _,
                 self.drawable_mask_counts()[idx] as usize,
             )
@@ -230,44 +235,44 @@ impl Model {
     #[inline]
     pub fn is_masked(&self) -> bool {
         let maskcounts = self.drawable_mask_counts();
-        (0..self.drawable_count()).any(|i| maskcounts[i] <= 0)
+        (0..self.drawable_count).any(|i| maskcounts[i] <= 0)
     }
 
-    /// Returns the [ConstantFlags](../struct.ConstantFlags.html)
+    /// Returns the [ConstantFlags](./struct.ConstantFlags.html)
     #[inline]
     pub fn drawable_constant_flags(&self) -> &[ConstantFlags] {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableConstantFlags(self.as_ptr()) as *const ConstantFlags,
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
 
-    /// Returns the [DynamicFlags](../struct.DynamicFlags.html)
+    /// Returns the [DynamicFlags](./struct.DynamicFlags.html)
     #[inline]
     pub fn drawable_dynamic_flags(&self) -> &[DynamicFlags] {
         unsafe {
             slice::from_raw_parts(
                 core::csmGetDrawableDynamicFlags(self.as_ptr()) as *const DynamicFlags,
-                self.drawable_count(),
+                self.drawable_count,
             )
         }
     }
 
-    /// Returns a reference to the underlying [Moc](../moc/struct.Moc.html)
+    /// Returns a reference to the underlying [Moc](./struct.Moc.html)
     #[inline]
     pub fn moc(&self) -> &Moc {
         &self.moc
     }
 
-    /// Returns the raw [csmModel](../../cubism_core_sys/model/struct.csmModel.html)  ptr.
+    /// Returns the raw [csmModel](../cubism_core_sys/model/struct.csmModel.html) ptr.
     #[inline]
     pub fn as_ptr(&self) -> *const csmModel {
         self.mem.as_ptr()
     }
 
-    /// Returns the raw [csmModel](../../cubism_core_sys/model/struct.csmModel.html)  ptr.
+    /// Returns the raw [csmModel](../cubism_core_sys/model/struct.csmModel.html) ptr.
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut csmModel {
         self.mem.as_mut_ptr()
@@ -312,14 +317,14 @@ impl Model {
                 core::csmGetPartOpacities(mem.as_mut_ptr()),
                 moc.part_count(),
             );
-            let drawable_count = unsafe { core::csmGetDrawableCount(mem.as_mut_ptr()) as usize };
+            let drawable_count = core::csmGetDrawableCount(mem.as_mut_ptr()) as usize;
 
             Model {
                 mem,
                 moc,
                 param_values,
                 part_opacities,
-                drawable_count
+                drawable_count,
             }
         }
     }

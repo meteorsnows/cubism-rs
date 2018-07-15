@@ -7,12 +7,12 @@ use std::{ptr, slice};
 use core::{self, csmMoc, csmModel};
 
 use mem::AlignedMemory;
-use {CubismError, Result};
+use Result;
 
 /// This represents a moc.
 ///
 /// A moc should never exists without at least one model instance, it
-/// owns the parameter and part ids as well as the minimum, maximum and default parameter values of its [Model](../model/struct.Model.html).
+/// owns the parameter and part ids as well as the minimum, maximum and default parameter values of its [Model](./struct.Model.html).
 /// The struct itself is immutable once created, so all these values never change either.
 ///
 /// You normally never have to interact with it on it's own.
@@ -85,7 +85,7 @@ impl Moc {
             if core::csmReviveMocInPlace(mem.as_mut_ptr() as *mut _, mem.layout().size() as u32)
                 .is_null()
             {
-                Err(CubismError::ReviveMocInPlace)
+                unreachable!("core::csmReviveMocInPlace return a null pointer, this shouldn't happen unless the alignment is incorrect")
             } else {
                 Ok(Moc {
                     mem,
@@ -100,13 +100,13 @@ impl Moc {
         }
     }
 
-    /// Returns the raw [csmMoc](../../cubism_core_sys/moc/struct.csmMoc.html) ptr
+    /// Returns the raw [csmMoc](../cubism_core_sys/moc/struct.csmMoc.html) ptr
     #[inline]
     pub fn as_ptr(&self) -> *const csmMoc {
         self.mem.as_ptr()
     }
 
-    /// Returns the raw [csmMoc](../../cubism_core_sys/moc/struct.csmMoc.html) ptr
+    /// Returns the raw [csmMoc](../cubism_core_sys/moc/struct.csmMoc.html) ptr
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut csmMoc {
         self.mem.as_mut_ptr()
@@ -164,7 +164,7 @@ impl Moc {
                 model_size,
             ).is_null()
             {
-                Err(CubismError::InitializeModelInPlace)
+                unreachable!("core::csmInitializeModelInPlace return a null pointer, this shouldn't happen unless the alignment is incorrect")
             } else {
                 Ok(model_mem)
             }

@@ -11,6 +11,10 @@ publish = false
 name = "cubism_demo"
 path = "src/cubism_demo.rs"
 
+[[bin]]
+name = "cubism_demo2"
+path = "src/cubism_demo2.rs"
+
 [dependencies]
 gfx = "0.17.1"
 gfx_window_glutin = "0.24.0"
@@ -19,3 +23,5 @@ nalgebra = "0.15.3"
 image = "*"
 cubism-gfx-renderer = { version = "*", path = "../cubism-gfx-renderer"}
 cubism = { version = "*", path = ".."}
+imgui = { git = "https://github.com/Gekkio/imgui-rs" }
+imgui-gfx-renderer = { git = "https://github.com/Gekkio/imgui-rs" }
